@@ -1,32 +1,4 @@
 ---
-- name: Include prompts playbook
-  import_playbook: input.yml
-
-- name: Include cloud provisioning playbook
-  import_playbook: cloud.yml
-
-<<<<<<< HEAD
-  roles:
-    - { role: cloud-digitalocean, tags: ['digitalocean'] }
-    - { role: cloud-ec2, tags: ['ec2'] }
-    - { role: cloud-gce, tags: ['gce'] }
-    - { role: cloud-azure, tags: ['azure'] }
-    - { role: cloud-scaleway, tags: ['scaleway'] }
-    - { role: cloud-openstack, tags: ['openstack'] }
-    - { role: local, tags: ['local'] }
-
-  post_tasks:
-    - block:
-      - name: Local post-tasks
-        include_tasks: playbooks/post.yml
-        become: false
-        tags: [ 'cloud' ]
-      rescue:
-        - debug: var=fail_hint
-          tags: always
-        - fail:
-          tags: always
-
 - name: Configure the server and install required software
   hosts: vpn-host
   gather_facts: false
@@ -96,7 +68,3 @@
         shell echo "{{ easyrsa_CA_password }}" > /tmp/ca_password
       become: no
       tags: tests
-=======
-- name: Include server configuration playbook
-  import_playbook: server.yml
->>>>>>> draft
