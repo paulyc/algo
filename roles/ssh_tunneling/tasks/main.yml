@@ -36,7 +36,7 @@
         ssh_key_type: ecdsa
         ssh_key_bits: 256
         ssh_key_comment: '{{ item }}@{{ IP_subject_alt_name }}'
-        ssh_key_passphrase: "{{ easyrsa_p12_export_password }}"
+        ssh_key_passphrase: "{{ p12_export_password }}"
         update_password: on_create
         state: present
         append: yes

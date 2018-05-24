@@ -3,31 +3,34 @@
 - name: FreeBSD / HardenedBSD | Get the existing kernel parameters
   command: sysctl -b kern.conftxt
   register: kern_conftxt
-  when: rebuild_kernel is defined and rebuild_kernel == "true"
+  when: rebuild_kernel
 
 - name: FreeBSD / HardenedBSD | Set the rebuild_needed fact
   set_fact:
     rebuild_needed: true
-  when: item not in kern_conftxt.stdout and rebuild_kernel is defined and rebuild_kernel == "true"
+  when:
+    - kern_conftxt is defined
+    - item not in (kern_conftxt|default(omit))['stdout']|default(omit)
+    - rebuild_kernel
   with_items:
     - "IPSEC"
     - "IPSEC_NAT_T"
     - "crypto"
 
-- name: FreeBSD / HardenedBSD | Make the kernel config
-  shell: sysctl -b kern.conftxt > /tmp/IPSEC
-  when: rebuild_needed is defined and rebuild_needed == true
+- block:
+  - name: FreeBSD / HardenedBSD | Make the kernel config
+    shell: sysctl -b kern.conftxt > /tmp/IPSEC
 
-- name: FreeBSD / HardenedBSD | Ensure the all options are enabled
-  lineinfile:
-    dest: /tmp/IPSEC
-    line: "{{ item }}"
-    insertbefore: BOF
-  with_items:
-    - "options IPSEC"
-    - "options IPSEC_NAT_T"
-    - "device	crypto"
-  when: rebuild_needed is defined and rebuild_needed == true
+  - name: FreeBSD / HardenedBSD | Ensure the all options are enabled
+    lineinfile:
+      dest: /tmp/IPSEC
+      line: "{{ item }}"
+      insertbefore: BOF
+    with_items:
+      - "options IPSEC"
+      - "options IPSEC_NAT_T"
+      - "device	crypto"
+  when: rebuild_needed
 
 - name: HardenedBSD | Determine the sources
   set_fact:
@@ -60,11 +63,11 @@
 
     - name: FreeBSD / HardenedBSD | Fetching the sources...
       async_status: jid={{ fetching_sources.ansible_job_id }}
-      when: rebuild_needed is defined and rebuild_needed == true
       register: result
       until: result.finished
       retries: 600
       delay: 30
+  when: rebuild_needed
   rescue:
     - debug: var=fetching_sources
 
@@ -80,18 +83,17 @@
       args:
         chdir: /usr/krnl_src
         executable: /usr/local/bin/bash
-      when: rebuild_needed is defined and rebuild_needed == true
       async: 1000
       poll: 0
       register: building_kernel
 
     - name: FreeBSD / HardenedBSD | The kernel is being built...
       async_status: jid={{ building_kernel.ansible_job_id }}
-      when: rebuild_needed is defined and rebuild_needed == true
       register: result
       until: result.finished
       retries: 600
       delay: 30
+  when: rebuild_needed
   rescue:
     - debug: var=building_kernel
 
@@ -102,7 +104,7 @@
   shell: sleep 2 && shutdown -r now
   args:
     executable: /usr/local/bin/bash
-  when: rebuild_needed is defined and rebuild_needed == true
+  when: rebuild_needed
   async: 1
   poll: 0
   ignore_errors: true

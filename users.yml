@@ -1,5 +1,4 @@
 ---
-
 - hosts: localhost
   gather_facts: False
   tags: always
@@ -25,14 +24,23 @@
               {% if server_ip is defined %}{{ server_ip }}
               {%- elif _server_ip.user_input is defined and _server_ip.user_input != "" %}{{ _server_ip.user_input }}
               {%- else %}omit{% endif %}
-            algo_ca_password: >-
-              {% if ca_password is defined %}{{ ca_password }}
-              {%- elif _ca_password.user_input is defined and _ca_password.user_input != "" %}{{ _ca_password.user_input }}
-              {%- else %}omit{% endif %}
 
         - name: Import host specific variables
           include_vars:
             file: "configs/{{ algo_server_ip }}/config.yml"
+
+        - pause:
+            prompt: Enter the password for the private CA key
+            echo: false
+          register: _ca_password
+          when: ca_password is undefined
+
+        - name: Set facts based on the input
+          set_fact:
+            algo_ca_password: >-
+              {% if ca_password is defined %}{{ ca_password }}
+              {%- elif _ca_password.user_input is defined and _ca_password.user_input != "" %}{{ _ca_password.user_input }}
+              {%- else %}omit{% endif %}
 
         - name: Add the server to the vpn-host group
           add_host:
@@ -67,17 +75,6 @@
   vars_files:
     - config.cfg
     - "configs/{{ algo_server_ip }}/config.yml"
-
-  pre_tasks:
-    - block:
-        - name: Common pre-tasks
-          include_tasks: playbooks/common.yml
-          tags: always
-      rescue:
-        - debug: var=fail_hint
-          tags: always
-        - fail:
-          tags: always
 
   roles:
     - role: ssh_tunneling

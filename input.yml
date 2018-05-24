@@ -11,22 +11,13 @@
       ssh_tunneling: false
       windows: false
     providers_map:
-      - name: DigitalOcean
-        alias: digitalocean
-      - name: Amazon Lightsail
-        alias: lightsail
-      - name: Amazon EC2
-        alias: ec2
-      - name: Microsoft Azure
-        alias: azure
-      - name: Google Compute Engine
-        alias: gce
-      - name: Scaleway
-        alias: scaleway
-      - name: OpenStack (DreamCompute optimised)
-        alias: openstack
-      - name: Install to existing Ubuntu 16.04 server (Advanced)
-        alias: local
+      - { name: DigitalOcean, alias: digitalocean }
+      - { name: Amazon EC2, alias: ec2 }
+      - { name: Microsoft Azure, alias: azure }
+      - { name: Google Compute Engine, alias: gce }
+      - { name: Scaleway, alias: scaleway}
+      - { name: OpenStack (DreamCompute optimised), alias: openstack }
+      - { name: Install to existing Ubuntu 16.04 server (Advanced), alias: local }
     booleans_map:
       Y: true
       y: true
@@ -45,12 +36,18 @@
       register: _algo_provider
       when: provider is undefined
 
+    - name: Set facts based on the input
+      set_fact:
+        algo_provider: "{{ provider | default(providers_map[_algo_provider.user_input|default(omit)|int - 1]['alias']) }}"
+
     - pause:
         prompt: |
           Name the vpn server
           [algo]
       register: _algo_server_name
-      when: server_name is undefined
+      when:
+        - server_name is undefined
+        - algo_provider != "local"
 
     - pause:
         prompt: |
@@ -106,7 +103,6 @@
 
     - name: Set facts based on the input
       set_fact:
-        algo_provider: "{{ provider | default(providers_map[_algo_provider.user_input|default(omit)|int - 1]['alias']) }}"
         algo_server_name: >-
           {% if server_name is defined %}{{ server_name }}
           {%- elif _algo_server_name.user_input is defined and _algo_server_name.user_input != "" %}{{ _algo_server_name.user_input }}
@@ -122,7 +118,7 @@
         algo_ondemand_wifi_exclude:  >-
           {% if ondemand_wifi_exclude is defined %}{{ ondemand_wifi_exclude }}
           {%- elif _ondemand_wifi_exclude.user_input is defined and _ondemand_wifi_exclude.user_input != "" %}{{ _ondemand_wifi_exclude.user_input }}
-          {%- else %}false{% endif %}
+          {%- else %}_null{% endif %}
         algo_local_dns: >-
           {% if local_dns is defined %}{{ local_dns | bool }}
           {%- elif _local_dns.user_input is defined and _local_dns.user_input != "" %}{{ booleans_map[_local_dns.user_input] | default(defaults['local_dns']) }}
