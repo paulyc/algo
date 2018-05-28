@@ -21,6 +21,8 @@
       when: algo_provider == "digitalocean"
     - role: cloud-ec2
       when: algo_provider == "ec2"
+    - role: cloud-vultr
+      when: algo_provider == "vultr"
     - role: cloud-gce
       when: algo_provider == "gce"
     - role: cloud-azure
