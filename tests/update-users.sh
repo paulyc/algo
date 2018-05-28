@@ -2,15 +2,13 @@
 
 set -ex
 
-CAPW=`cat /tmp/ca_password`
-USER_ARGS="server_ip=$LXC_IP easyrsa_CA_password=$CAPW users=['user1', 'user2']"
-USERS=""
+USER_ARGS="server=$LXC_IP users=['user1', 'user2']"
 
 if [ "${LXC_NAME}" == "docker" ]
 then
-  docker run -it -v $(pwd)/config.cfg:/algo/config.cfg -v ~/.ssh:/root/.ssh -e "USER_ARGS=${USER_ARGS}" travis/algo /bin/sh -c "chown -R 0:0 /root/.ssh && source env/bin/activate && ansible-playbook users.yml -e \"${USER_ARGS}\""
+  docker run -it -v $(pwd)/config.cfg:/algo/config.cfg -v ~/.ssh:/root/.ssh -e "USER_ARGS=${USER_ARGS}" travis/algo /bin/sh -c "chown -R 0:0 /root/.ssh && source env/bin/activate && bash -x algo update-users -e \"${USER_ARGS}\""
 else
-  ansible-playbook users.yml -e "${USER_ARGS}"
+  bash -x algo update-users -e "${USER_ARGS}"
 fi
 
 cd configs/$LXC_IP/pki/

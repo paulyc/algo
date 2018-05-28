@@ -9,14 +9,8 @@
     - block:
         - pause:
             prompt: "Enter the IP address of your server: (or use localhost for local installation)"
-          register: _server_ip
-          when: server_ip is undefined
-
-        - pause:
-            prompt: Enter the password for the private CA key
-            echo: false
-          register: _ca_password
-          when: ca_password is undefined
+          register: _server
+          when: server is undefined
 
         - name: Set facts based on the input
           set_fact:

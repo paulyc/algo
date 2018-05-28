@@ -14,4 +14,9 @@ then
 	fi
 fi
 
-ansible-playbook deploy.yml $@
+case "$1" in
+  update-users) PLAYBOOK=users.yml; ARGS=${@:2};;
+  *) PLAYBOOK=deploy.yml; ARGS=${@} ;;
+esac
+
+ansible-playbook ${PLAYBOOK} ${ARGS}
