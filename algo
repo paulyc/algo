@@ -19,4 +19,4 @@ case "$1" in
   *) PLAYBOOK=deploy.yml; ARGS=${@} ;;
 esac
 
-ansible-playbook ${PLAYBOOK} "${ARGS}"
+ansible-playbook ${PLAYBOOK} ${ARGS}
