@@ -15,8 +15,8 @@
         - name: Set facts based on the input
           set_fact:
             algo_server_ip: >-
-              {% if server_ip is defined %}{{ server_ip }}
-              {%- elif _server_ip.user_input is defined and _server_ip.user_input != "" %}{{ _server_ip.user_input }}
+              {% if server is defined %}{{ server }}
+              {%- elif _server.user_input is defined and _server.user_input != "" %}{{ _server.user_input }}
               {%- else %}omit{% endif %}
 
         - name: Import host specific variables

@@ -6,9 +6,9 @@ USER_ARGS="server=$LXC_IP users=['user1', 'user2']"
 
 if [ "${LXC_NAME}" == "docker" ]
 then
-  docker run -it -v $(pwd)/config.cfg:/algo/config.cfg -v ~/.ssh:/root/.ssh -e "USER_ARGS=${USER_ARGS}" travis/algo /bin/sh -c "chown -R 0:0 /root/.ssh && source env/bin/activate && bash -x algo update-users -e \"${USER_ARGS}\""
+  docker run -it -v $(pwd)/config.cfg:/algo/config.cfg -v ~/.ssh:/root/.ssh -e "USER_ARGS=${USER_ARGS}" travis/algo /bin/sh -c "chown -R 0:0 /root/.ssh && source env/bin/activate && ansible-playbook users.yml -e \"${USER_ARGS}\""
 else
-  bash -x algo update-users -e "${USER_ARGS}"
+  ansible-playbook users.yml -e "${USER_ARGS}"
 fi
 
 cd configs/$LXC_IP/pki/

@@ -6,7 +6,7 @@ DEPLOY_ARGS="{provider: local, server: $LXC_IP, ssh_user: ubuntu, endpoint: $LXC
 
 if [ "${LXC_NAME}" == "docker" ]
 then
-  docker run -it -v $(pwd)/config.cfg:/algo/config.cfg -v ~/.ssh:/root/.ssh -e "DEPLOY_ARGS=${DEPLOY_ARGS}" travis/algo /bin/sh -c "chown -R 0:0 /root/.ssh && source env/bin/activate && bash -x ansible-playbook users.yml \"${DEPLOY_ARGS}\" --skip-tags apparmor"
+  docker run -it -v $(pwd)/config.cfg:/algo/config.cfg -v ~/.ssh:/root/.ssh -e "DEPLOY_ARGS=${DEPLOY_ARGS}" travis/algo /bin/sh -c "chown -R 0:0 /root/.ssh && source env/bin/activate && bash -x algo -e \"${DEPLOY_ARGS}\" --skip-tags apparmor"
 else
-  ansible-playbook users.yml -e "${DEPLOY_ARGS}" --skip-tags apparmor
+  bash -x algo -e "${DEPLOY_ARGS}" --skip-tags apparmor
 fi
